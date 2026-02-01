@@ -1,0 +1,35 @@
+# Render.yaml - Configuración para deployment en Render
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # Servidor Web Principal
+  - type: web
+    name: filsync-cloud
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --worker-class gevent -w 1 --bind 0.0.0.0:$PORT app:app
+
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+      - key: SECRET_KEY
+        generateValue: true
+
+      - key: GATEWAY_SECRET_KEY
+        generateValue: true
+        sync: false  # No sincronizar - debe configurarse manualmente
+
+      - key: OPENROUTER_API_KEY
+        sync: false  # Debe configurarse desde el dashboard
+
+      - key: PORT
+        value: 8000
+
+    healthCheckPath: /health
+
+    # Auto-deploy desde GitHub (opcional)
+    # autoDeploy: true
+    # branch: main
