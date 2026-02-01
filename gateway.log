@@ -1,0 +1,47 @@
+2026-01-31 23:45:30,274 - ERROR -    - CLOUD_SERVER_URL
+2026-01-31 23:45:30,276 - ERROR -    - GATEWAY_SECRET_KEY
+2026-01-31 23:45:30,276 - ERROR - 
+Crea un archivo .env con:
+2026-01-31 23:45:30,277 - ERROR - CLOUD_SERVER_URL=https://tu-app.render.com
+2026-01-31 23:45:30,277 - ERROR - GATEWAY_SECRET_KEY=tu_clave_secreta
+2026-01-31 23:45:30,277 - ERROR - BLUETOOTH_TYPE=SPP
+2026-01-31 23:45:30,278 - ERROR - BLUETOOTH_PORT=COM5
+2026-02-01 00:07:00,948 - ERROR -    - CLOUD_SERVER_URL
+2026-02-01 00:07:00,949 - ERROR -    - GATEWAY_SECRET_KEY
+2026-02-01 00:07:00,949 - ERROR - 
+Crea un archivo .env con:
+2026-02-01 00:07:00,950 - ERROR - CLOUD_SERVER_URL=https://tu-app.render.com
+2026-02-01 00:07:00,950 - ERROR - GATEWAY_SECRET_KEY=tu_clave_secreta
+2026-02-01 00:07:00,951 - ERROR - BLUETOOTH_TYPE=SPP
+2026-02-01 00:07:00,951 - ERROR - BLUETOOTH_PORT=COM5
+2026-02-01 00:07:31,870 - ERROR -    - CLOUD_SERVER_URL
+2026-02-01 00:07:31,905 - ERROR -    - GATEWAY_SECRET_KEY
+2026-02-01 00:07:31,905 - ERROR - 
+Crea un archivo .env con:
+2026-02-01 00:07:31,905 - ERROR - CLOUD_SERVER_URL=https://tu-app.render.com
+2026-02-01 00:07:31,905 - ERROR - GATEWAY_SECRET_KEY=tu_clave_secreta
+2026-02-01 00:07:31,905 - ERROR - BLUETOOTH_TYPE=SPP
+2026-02-01 00:07:31,905 - ERROR - BLUETOOTH_PORT=COM5
+2026-02-01 01:40:14,449 - INFO - ============================================================
+2026-02-01 01:40:14,450 - INFO -   FILSYNC BLUETOOTH GATEWAY
+2026-02-01 01:40:14,450 - INFO -   Conectando ESP32 local con servidor cloud
+2026-02-01 01:40:14,450 - INFO - ============================================================
+2026-02-01 01:40:24,664 - ERROR - Error conectando al cloud: HTTPConnectionPool(host='localhost', port=8000): Max retries exceeded with url: /api/gateway/register (Caused by NewConnectionError("HTTPConnection(host='localhost', port=8000): Failed to establish a new connection: [WinError 10061] No se puede establecer una conexión ya que el equipo de destino denegó expresamente dicha conexión"))
+2026-02-01 01:40:24,667 - WARNING -     El gateway funcionará en modo offline y sincronizará cuando sea posible
+2026-02-01 01:40:24,676 - INFO - Conectando a COM6...
+2026-02-01 01:40:24,677 - INFO - Bluetooth iniciado en modo SPP
+2026-02-01 01:40:24,683 - INFO - Reintentando conexión en 5 segundos...
+2026-02-01 01:40:24,684 - INFO - 
+============================================================
+2026-02-01 01:40:24,686 - INFO - ============================================================
+2026-02-01 01:40:24,687 - INFO - Presiona Ctrl+C para detener
+
+2026-02-01 01:40:29,686 - INFO - Conectando a COM6...
+2026-02-01 01:40:29,699 - INFO - Reintentando conexión en 5 segundos...
+2026-02-01 01:40:34,700 - INFO - Conectando a COM6...
+2026-02-01 01:40:34,701 - INFO - Reintentando conexión en 5 segundos...
+2026-02-01 01:40:39,727 - INFO - Conectando a COM6...
+2026-02-01 01:40:39,801 - INFO - Reintentando conexión en 5 segundos...
+2026-02-01 01:40:44,906 - INFO - Conectando a COM6...
+2026-02-01 01:40:44,907 - INFO - Reintentando conexión en 5 segundos...
+2026-02-01 01:40:48,663 - INFO - Deteniendo Bluetooth...
