@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filsynics</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="/static/logo.png" alt="Logo Filsync" class="logo-img">
+                    <h1>Filsync</h1>
+                </div>
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot disconnected"></span>
+                    <span class="status-text">Desconectado</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Estado Principal -->
+            <section class="state-card" id="stateCard">
+                <div class="state-icon" id="stateIcon">
+                    <i class="fas fa-hand-paper"></i>
+                </div>
+                <h2 class="state-title" id="stateTitle">SIN DEDO</h2>
+                <p class="state-subtitle">Coloque el dedo en el sensor</p>
+            </section>
+
+            <!-- Tarjetas de Datos -->
+            <section class="data-cards">
+                <div class="data-card fc-card">
+                    <div class="card-header">
+                        <i class="fas fa-heart"></i>
+                        <h3>Frecuencia Cardíaca</h3>
+                    </div>
+                    <div class="card-value">
+                        <span class="value" id="fcValue">--</span>
+                        <span class="unit">bpm</span>
+                    </div>
+                </div>
+
+                <div class="data-card spo2-card">
+                    <div class="card-header">
+                        <i class="fas fa-lungs"></i>
+                        <h3>Saturación de Oxígeno</h3>
+                    </div>
+                    <div class="card-value">
+                        <span class="value" id="spo2Value">--</span>
+                        <span class="unit">%</span>
+                    </div>
+                </div>
+
+                <div class="data-card temp-card">
+                    <div class="card-header">
+                        <i class="fas fa-thermometer-half"></i>
+                        <h3>Temperatura</h3>
+                    </div>
+                    <div class="card-value">
+                        <span class="value" id="tempValue">--</span>
+                        <span class="unit">°C</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Gráficas -->
+            <section class="charts-section">
+                <div class="chart-container">
+                    <h3><i class="fas fa-heart"></i> Frecuencia Cardíaca</h3>
+                    <canvas id="fcChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3><i class="fas fa-lungs"></i> Saturación de Oxígeno</h3>
+                    <canvas id="spo2Chart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3><i class="fas fa-thermometer-half"></i> Temperatura</h3>
+                    <canvas id="tempChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Asistente IA -->
+            <section class="ai-section">
+                <div class="ai-header">
+                    <h2><i class="fas fa-robot"></i> Asistente de Bienestar</h2>
+                </div>
+
+                <!-- Consejos Automáticos -->
+                <div class="ai-tips" id="aiTips" style="display: none;">
+                    <div class="tips-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Consejos para Reducir el Estrés</h3>
+                    </div>
+                    <div class="tips-content" id="tipsContent">
+                        <div class="loading">
+                            <i class="fas fa-spinner fa-spin"></i> Generando consejos...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat IA -->
+                <div class="ai-chat">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message assistant">
+                            <div class="message-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                ¡Hola! Soy tu asistente de bienestar. Puedo ayudarte con consejos sobre salud general, relajación y bienestar. ¿En qué puedo ayudarte?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <input
+                            type="text"
+                            id="chatInput"
+                            placeholder="Escribe tu mensaje aquí..."
+                            autocomplete="off"
+                        >
+                        <button id="sendBtn" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                        <button id="clearChatBtn" class="clear-btn" title="Limpiar chat">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>
+                <i class="fas fa-code"></i> Monitor Biométrico ESP32 + Flask + IA
+                <span class="separator">•</span>
+                <i class="fas fa-microchip"></i> Filsync-ESP32
+            </p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
