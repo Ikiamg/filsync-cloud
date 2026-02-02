@@ -23,6 +23,7 @@ class Config:
     MAX_DATA_POINTS = 100
 
     # Flask
-    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'hJpRYahvPJbNHxQzJIsnV1XKtw76MhgG58Y8lJmUQdw')
 
     FLASK_PORT = int(os.getenv('FLASK_PORT', 5000))
+
