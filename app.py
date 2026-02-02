@@ -280,12 +280,6 @@ def ai_test():
             diagnostics['test_result'] = {'error': str(e)}
     
     return jsonify(diagnostics)
-    except Exception as e:
-        logger.error(f"Error en /api/ai_tips: {e}")
-        return jsonify({
-            'success': False,
-            'error': 'Error interno del servidor'
-        }), 500
 
 
 # ==================== RUTAS DE GATEWAY (AUTENTICADAS) ====================
