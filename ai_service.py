@@ -11,7 +11,7 @@ class AIService:
     def __init__(self):
         self.api_key = os.getenv("OPENROUTER_API_KEY")
         self.base_url = 'https://openrouter.ai/api/v1/chat/completions'
-        self.model = os.getenv('AI_MODEL', 'openai/gpt-3.5-turbo')
+        self.model = os.getenv('AI_MODEL', 'openai/gpt-oss-120b:free')
 
         if not self.api_key:
             logger.warning("OPENROUTER_API_KEY no configurada")
@@ -286,3 +286,4 @@ Formato: Lista numerada simple."""
                 'error': 'Error interno',
                 'response': ''
             }
+
