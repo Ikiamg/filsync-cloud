@@ -1,6 +1,6 @@
 import requests
 import logging
-from config import Config
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -9,9 +9,9 @@ class AIService:
     """Servicio para interactuar con OpenRouter API"""
 
     def __init__(self):
-        self.api_key = Config.OPENROUTER_API_KEY
-        self.base_url = Config.OPENROUTER_BASE_URL
-        self.model = Config.AI_MODEL
+        self.api_key = os.getenv("OPENROUTER_API_KEY")
+        self.base_url = 'https://openrouter.ai/api/v1/chat/completions'
+        self.model = os.getenv('AI_MODEL', 'openai/gpt-3.5-turbo')
 
         if not self.api_key:
             logger.warning("OPENROUTER_API_KEY no configurada")
