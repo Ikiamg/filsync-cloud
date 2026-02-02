@@ -140,11 +140,24 @@ Formato: Lista numerada simple."""
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error en solicitud a OpenRouter: {e}")
+            logger.error(f"Status code: {getattr(e.response, 'status_code', 'N/A') if hasattr(e, 'response') else 'N/A'}")
+            logger.error(f"Response text: {getattr(e.response, 'text', 'N/A') if hasattr(e, 'response') else 'N/A'}")
+            
+            error_msg = 'Error de conexión con el servicio de IA'
+            if hasattr(e, 'response') and e.response is not None:
+                if e.response.status_code == 401:
+                    error_msg = 'API key inválida o expirada'
+                elif e.response.status_code == 429:
+                    error_msg = 'Límite de peticiones excedido. Intenta en unos minutos'
+                elif e.response.status_code >= 500:
+                    error_msg = 'Error en el servidor de IA. Intenta nuevamente'
+            
             return {
                 'success': False,
-                'error': f'Error de conexión: {str(e)}',
+                'error': error_msg,
                 'tips': ''
             }
+
 
         except Exception as e:
             logger.error(f"Error inesperado en AI Service: {e}", exc_info=True)
