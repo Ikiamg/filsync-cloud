@@ -217,6 +217,7 @@ def get_alerts():
 def ai_tips():
     """Genera consejos de IA basados en datos biométricos"""
     if not ai_service:
+        logger.error("AI Service no inicializado")
         return jsonify({
             'success': False,
             'error': 'Servicio de IA no disponible'
@@ -224,15 +225,61 @@ def ai_tips():
     
     try:
         data = request.get_json()
+        logger.info(f"Datos recibidos para IA: {data}")
         
         fc = data.get('fc', 0)
         spo2 = data.get('spo2', 0)
         temp = data.get('temp', 0)
         state = data.get('state', 'NORMAL')
         
+        logger.info(f"Llamando a get_stress_tips con FC={fc}, SpO2={spo2}, Temp={temp}, State={state}")
+        
         result = ai_service.get_stress_tips(fc, spo2, temp, state)
+        
+        logger.info(f"Resultado de IA: success={result.get('success')}, error={result.get('error', 'none')}")
+        
         return jsonify(result)
         
+    except Exception as e:
+        logger.error(f"Error en /api/ai_tips: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'Error interno del servidor'
+        }), 500
+
+
+@app.route('/api/ai_test', methods=['GET'])
+def ai_test():
+    """Endpoint de diagnóstico para probar la IA"""
+    diagnostics = {
+        'ai_service_initialized': ai_service is not None,
+        'api_key_configured': False,
+        'api_key_length': 0,
+        'base_url': None,
+        'model': None,
+        'test_result': None
+    }
+    
+    if ai_service:
+        diagnostics['api_key_configured'] = ai_service.api_key is not None
+        if ai_service.api_key:
+            diagnostics['api_key_length'] = len(ai_service.api_key)
+            diagnostics['api_key_prefix'] = ai_service.api_key[:10] + "..." if len(ai_service.api_key) > 10 else "too short"
+        diagnostics['base_url'] = ai_service.base_url
+        diagnostics['model'] = ai_service.model
+        
+        # Test simple
+        try:
+            test_result = ai_service.get_stress_tips(85, 98, 36.5, 'STRESS')
+            diagnostics['test_result'] = {
+                'success': test_result.get('success'),
+                'has_tips': bool(test_result.get('tips')),
+                'error': test_result.get('error', 'none')
+            }
+        except Exception as e:
+            diagnostics['test_result'] = {'error': str(e)}
+    
+    return jsonify(diagnostics)
     except Exception as e:
         logger.error(f"Error en /api/ai_tips: {e}")
         return jsonify({
