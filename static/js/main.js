@@ -19,7 +19,6 @@ const elements = {
     stateTitle: document.getElementById('stateTitle'),
     fcValue: document.getElementById('fcValue'),
     spo2Value: document.getElementById('spo2Value'),
-    tempValue: document.getElementById('tempValue'),
     aiTips: document.getElementById('aiTips'),
     tipsContent: document.getElementById('tipsContent'),
     chatMessages: document.getElementById('chatMessages'),
@@ -94,7 +93,6 @@ function updateUI(data) {
     // Actualizar valores numéricos
     elements.fcValue.textContent = data.fc || '--';
     elements.spo2Value.textContent = data.spo2 || '--';
-    elements.tempValue.textContent = data.temp ? data.temp.toFixed(2) : '--';
 
     // Actualizar estado
     updateState(data.state || 'SIN_DEDO');
@@ -205,10 +203,6 @@ function initializeCharts() {
         chartConfig('SpO2 (%)', '#3b82f6', 100)
     );
 
-    charts.temp = new Chart(
-        document.getElementById('tempChart'),
-        chartConfig('Temperatura (°C)', '#f59e0b', 42)
-    );
 
     console.log('Gráficas inicializadas');
 }
@@ -231,7 +225,6 @@ function updateCharts(buffers) {
 
     updateChart(charts.fc, buffers.fc, buffers.timestamps);
     updateChart(charts.spo2, buffers.spo2, buffers.timestamps);
-    updateChart(charts.temp, buffers.temp, buffers.timestamps);
 }
 
 // ============================================
