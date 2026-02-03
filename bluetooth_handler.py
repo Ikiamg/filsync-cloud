@@ -3,7 +3,7 @@ import time
 import logging
 import re
 from datetime import datetime
-from Filsync2.cloud_server.config import Config
+from config import Config
 
 # Importaciones condicionales según el tipo de Bluetooth
 try:
@@ -118,11 +118,12 @@ class BluetoothHandler:
         self.thread = None
 
         # Patrones de regex para parsear datos
+        # Acepta tanto espacios como comas como separadores
         self.patterns = {
             'FC': re.compile(r'FC:(\d+)'),
             'SpO2': re.compile(r'SpO2:(\d+)'),
             'Temp': re.compile(r'Temp:([\d.]+)'),
-            'STATE': re.compile(r'STATE:(RELAX|NORMAL|STRESS|SIN_DEDO)'),
+            'STATE': re.compile(r'State:(RELAX|NORMAL|STRESS|SIN_DEDO)', re.IGNORECASE),
             'IR': re.compile(r'IR:(\d+)')
         }
 
@@ -287,15 +288,21 @@ class BluetoothHandler:
 
     def _parse_line(self, line):
         """Parsea una línea recibida del ESP32"""
-        logger.debug(f"Recibido: {line}")
+        # IMPORTANTE: Ver qué está llegando exactamente
+        logger.info(f"📥 LÍNEA RECIBIDA: '{line}'")
 
         # Buscar patrones en la línea
+        found_any = False
         for key, pattern in self.patterns.items():
             match = pattern.search(line)
             if match:
                 value = match.group(1)
                 self.data.update(key, value)
-                logger.debug(f"  {key} = {value}")
+                logger.info(f"  ✓ {key} = {value}")
+                found_any = True
+
+        if not found_any:
+            logger.warning(f"  ⚠️  No se encontraron patrones válidos en: '{line}'")
 
         # Llamar callback si existe
         if self.data_callback:
