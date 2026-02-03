@@ -31,13 +31,19 @@ except ImportError:
 
 load_dotenv()
 
-# Configuración
+# Configurar encoding para Windows
+if sys.platform == 'win32':
+    # Configurar UTF-8 para la consola de Windows
+    if sys.stdout.encoding != 'utf-8':
+        sys.stdout.reconfigure(encoding='utf-8')
+
+# Configuración de logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler('gateway.log')
+        logging.FileHandler('gateway.log', encoding='utf-8')
     ]
 )
 logger = logging.getLogger(__name__)
@@ -45,42 +51,46 @@ logger = logging.getLogger(__name__)
 
 class CloudGateway:
     """Gateway que conecta Bluetooth local con servidor cloud"""
-
+    
     def __init__(self):
         self.cloud_url = os.getenv('CLOUD_SERVER_URL', 'http://localhost:8000')
         self.secret_key = os.getenv('GATEWAY_SECRET_KEY', 'default-secret-change-me')
         self.gateway_id = os.getenv('GATEWAY_ID', 'gateway-001')
-
+        
         # Estado
         self.connected_to_cloud = False
         self.last_ping = 0
         self.reconnect_attempts = 0
-
+        
         # Bluetooth
         self.bluetooth_handler = None
-
+        
         # Cola de datos
         self.data_queue = []
         self.queue_lock = threading.Lock()
-
+        
     def on_bluetooth_data(self, data):
         """Callback cuando llegan datos del Bluetooth"""
         try:
+            # Log compacto solo cuando hay cambios significativos
+            logger.debug(f"📡 BT: FC={data.get('fc', 0)}, SpO2={data.get('spo2', 0)}, State={data.get('state', 'N/A')}")
+            
             # Agregar timestamp y gateway_id
             data['gateway_id'] = self.gateway_id
             data['received_at'] = datetime.now().isoformat()
-
-            # Agregar a cola
-            with self.queue_lock:
-                self.data_queue.append(data)
-
-            # Enviar inmediatamente si está conectado
+            
+            # Enviar inmediatamente si está conectado (sin cola para reducir delay)
             if self.connected_to_cloud:
                 self._send_data_to_cloud(data)
-
+            else:
+                # Solo encolar si no hay conexión
+                with self.queue_lock:
+                    self.data_queue.append(data)
+                logger.warning("Cloud desconectado, datos en cola")
+                
         except Exception as e:
             logger.error(f"Error procesando datos Bluetooth: {e}")
-
+    
     def _send_data_to_cloud(self, data):
         """Envía datos al servidor cloud"""
         try:
@@ -88,49 +98,50 @@ class CloudGateway:
                 'Content-Type': 'application/json',
                 'X-Gateway-Secret': self.secret_key
             }
-
+            
             response = requests.post(
                 f"{self.cloud_url}/api/gateway/data",
                 json=data,
                 headers=headers,
-                timeout=5
+                timeout=3  # Reducido de 5 a 3 segundos
             )
-
+            
             if response.status_code == 200:
                 # Remover de cola si se envió exitosamente
                 with self.queue_lock:
                     if data in self.data_queue:
                         self.data_queue.remove(data)
-
+                        
                 self.connected_to_cloud = True
                 self.reconnect_attempts = 0
+                logger.debug("✓ Enviado")
                 return True
             else:
-                logger.warning(f"Cloud respondió con código: {response.status_code}")
+                logger.warning(f"Cloud código: {response.status_code}")
                 return False
-
+                
         except requests.exceptions.ConnectionError:
             if self.connected_to_cloud:
                 logger.error("❌ Conexión perdida con el servidor cloud")
             self.connected_to_cloud = False
             return False
-
+            
         except Exception as e:
             logger.error(f"Error enviando datos al cloud: {e}")
             return False
-
+    
     def _flush_queue(self):
         """Intenta enviar datos pendientes en la cola"""
         if not self.connected_to_cloud:
             return
-
+            
         with self.queue_lock:
             queue_copy = self.data_queue.copy()
-
+        
         for data in queue_copy:
             if self._send_data_to_cloud(data):
                 logger.info(f"✓ Dato pendiente enviado al cloud")
-
+    
     def _register_gateway(self):
         """Registra este gateway en el servidor cloud"""
         try:
@@ -138,21 +149,21 @@ class CloudGateway:
                 'Content-Type': 'application/json',
                 'X-Gateway-Secret': self.secret_key
             }
-
+            
             payload = {
                 'gateway_id': self.gateway_id,
                 'bluetooth_type': os.getenv('BLUETOOTH_TYPE', 'SPP'),
                 'device_name': os.getenv('BLE_DEVICE_NAME', 'Filsync-ESP32'),
                 'registered_at': datetime.now().isoformat()
             }
-
+            
             response = requests.post(
                 f"{self.cloud_url}/api/gateway/register",
                 json=payload,
                 headers=headers,
                 timeout=10
             )
-
+            
             if response.status_code == 200:
                 logger.info("✓ Gateway registrado en el servidor cloud")
                 self.connected_to_cloud = True
@@ -160,24 +171,24 @@ class CloudGateway:
             else:
                 logger.error(f"Error registrando gateway: {response.status_code}")
                 return False
-
+                
         except Exception as e:
             logger.error(f"Error conectando al cloud: {e}")
             return False
-
+    
     def _ping_cloud(self):
         """Envía ping periódico al servidor cloud"""
         while True:
             try:
                 time.sleep(30)  # Ping cada 30 segundos
-
+                
                 if not self.connected_to_cloud:
                     # Intentar reconectar
                     if self._register_gateway():
                         logger.info("✓ Reconectado al servidor cloud")
                         self._flush_queue()  # Enviar datos pendientes
                     continue
-
+                
                 # Enviar ping
                 headers = {'X-Gateway-Secret': self.secret_key}
                 response = requests.get(
@@ -186,17 +197,17 @@ class CloudGateway:
                     params={'gateway_id': self.gateway_id},
                     timeout=5
                 )
-
+                
                 if response.status_code != 200:
                     self.connected_to_cloud = False
                     logger.warning("Ping falló, marcando como desconectado")
                 else:
                     self.last_ping = time.time()
-
+                    
             except Exception as e:
                 self.connected_to_cloud = False
                 logger.debug(f"Error en ping: {e}")
-
+    
     def start(self):
         """Inicia el gateway"""
         logger.info("=" * 60)
@@ -206,7 +217,7 @@ class CloudGateway:
         logger.info(f"\n📡 Servidor Cloud: {self.cloud_url}")
         logger.info(f"🔑 Gateway ID: {self.gateway_id}")
         logger.info(f"🔵 Bluetooth Type: {os.getenv('BLUETOOTH_TYPE', 'SPP')}\n")
-
+        
         # Registrar en cloud
         logger.info("🌐 Conectando al servidor cloud...")
         if self._register_gateway():
@@ -214,7 +225,7 @@ class CloudGateway:
         else:
             logger.warning("⚠️  No se pudo conectar al cloud (se reintentará automáticamente)")
             logger.warning("    El gateway funcionará en modo offline y sincronizará cuando sea posible")
-
+        
         # Iniciar Bluetooth
         logger.info("\n📱 Iniciando conexión Bluetooth...")
         try:
@@ -224,32 +235,31 @@ class CloudGateway:
         except Exception as e:
             logger.error(f"❌ Error iniciando Bluetooth: {e}")
             return
-
+        
         # Iniciar hilo de ping
         ping_thread = threading.Thread(target=self._ping_cloud, daemon=True)
         ping_thread.start()
-
+        
         logger.info("\n" + "=" * 60)
         logger.info("🚀 GATEWAY EN EJECUCIÓN")
         logger.info("=" * 60)
         logger.info("Presiona Ctrl+C para detener\n")
-
+        
         # Mantener ejecutando
         try:
             while True:
                 time.sleep(1)
-
+                
                 # Mostrar estado cada 60 segundos
                 if int(time.time()) % 60 == 0:
                     status = "🟢 CONECTADO" if self.connected_to_cloud else "🔴 DESCONECTADO"
                     bt_status = "🟢 CONECTADO" if self.bluetooth_handler.connected else "🔴 DESCONECTADO"
-
+                    
                     with self.queue_lock:
                         queue_size = len(self.data_queue)
-
-                    logger.info(
-                        f"\n📊 Estado: Cloud {status} | Bluetooth {bt_status} | Cola: {queue_size} datos pendientes")
-
+                    
+                    logger.info(f"\n📊 Estado: Cloud {status} | Bluetooth {bt_status} | Cola: {queue_size} datos pendientes")
+                    
         except KeyboardInterrupt:
             logger.info("\n\n⏹️  Deteniendo gateway...")
             if self.bluetooth_handler:
@@ -262,7 +272,7 @@ def main():
     # Verificar variables de entorno
     required_vars = ['CLOUD_SERVER_URL', 'GATEWAY_SECRET_KEY']
     missing_vars = [var for var in required_vars if not os.getenv(var)]
-
+    
     if missing_vars:
         logger.error("❌ Error: Variables de entorno faltantes:")
         for var in missing_vars:
@@ -273,7 +283,7 @@ def main():
         logger.error("BLUETOOTH_TYPE=SPP")
         logger.error("BLUETOOTH_PORT=COM5")
         sys.exit(1)
-
+    
     # Iniciar gateway
     gateway = CloudGateway()
     gateway.start()
