@@ -184,7 +184,7 @@ class BluetoothHandler:
                     if line:
                         self._parse_line(line)
 
-                time.sleep(0.05)  # 50ms entre lecturas
+                time.sleep(0.01)  # 10ms entre lecturas (reducido de 50ms)
 
             except serial.SerialException as e:
                 if self.connected:
@@ -288,9 +288,9 @@ class BluetoothHandler:
 
     def _parse_line(self, line):
         """Parsea una línea recibida del ESP32"""
-        # IMPORTANTE: Ver qué está llegando exactamente
-        logger.info(f"📥 LÍNEA RECIBIDA: '{line}'")
-
+        # Solo log en modo debug para reducir overhead
+        logger.debug(f"📥 LÍNEA: '{line}'")
+        
         # Buscar patrones en la línea
         found_any = False
         for key, pattern in self.patterns.items():
@@ -298,14 +298,13 @@ class BluetoothHandler:
             if match:
                 value = match.group(1)
                 self.data.update(key, value)
-                logger.info(f"  ✓ {key} = {value}")
                 found_any = True
-
+        
         if not found_any:
-            logger.warning(f"  ⚠️  No se encontraron patrones válidos en: '{line}'")
+            logger.debug(f"  ⚠️  No se encontraron patrones en: '{line}'")
 
-        # Llamar callback si existe
-        if self.data_callback:
+        # Llamar callback SOLO si encontramos datos válidos
+        if found_any and self.data_callback:
             try:
                 self.data_callback(self.data.get_dict())
             except Exception as e:
