@@ -86,10 +86,22 @@ class DataStore:
         self.fc_buffer.append(data.get('fc', 0))
         self.spo2_buffer.append(data.get('spo2', 0))
         self.temp_buffer.append(data.get('temp', 0.0))
-        self.timestamps.append(
-            datetime.fromisoformat(data.get('timestamp', datetime.now().isoformat()))
-            .strftime('%H:%M:%S')
-        )
+        
+        # Manejar timestamp que puede venir como string o número
+        timestamp_raw = data.get('timestamp', datetime.now().isoformat())
+        if isinstance(timestamp_raw, (int, float)):
+            # Si es número (Unix timestamp), convertir a datetime
+            timestamp_dt = datetime.fromtimestamp(timestamp_raw)
+        elif isinstance(timestamp_raw, str):
+            # Si es string ISO, parsear
+            try:
+                timestamp_dt = datetime.fromisoformat(timestamp_raw)
+            except:
+                timestamp_dt = datetime.now()
+        else:
+            timestamp_dt = datetime.now()
+        
+        self.timestamps.append(timestamp_dt.strftime('%H:%M:%S'))
         
         # Detectar alertas
         self._check_alerts(data)
