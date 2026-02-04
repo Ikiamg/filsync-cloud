@@ -115,25 +115,25 @@ function updateState(state) {
         'RELAX': {
             class: 'relax',
             icon: 'fa-smile',
-            title: 'RELAJADO',
+            title: 'DETECTADO - RELAJADO',
             subtitle: 'Tu ritmo cardíaco está bajo. ¡Sigue así!'
         },
         'NORMAL': {
             class: 'normal',
             icon: 'fa-heart',
-            title: 'NORMAL',
+            title: 'DETECTADO',
             subtitle: 'Tus signos vitales están en rango normal'
         },
         'STRESS': {
             class: 'stress',
             icon: 'fa-exclamation-triangle',
-            title: 'ESTRÉS DETECTADO',
+            title: 'DETECTADO - ESTRÉS',
             subtitle: 'Tu ritmo cardíaco está elevado. Considera tomar un descanso'
         },
         'SIN_DEDO': {
             class: 'no-finger',
             icon: 'fa-hand-paper',
-            title: 'SIN DEDO',
+            title: 'NO DETECTADO',
             subtitle: 'Coloque el dedo en el sensor'
         }
     };
