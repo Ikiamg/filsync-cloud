@@ -260,6 +260,43 @@ def ai_tips():
         }), 500
 
 
+@app.route('/api/chat', methods=['POST'])
+def chat():
+    """Chat conversacional con IA"""
+    if not ai_service:
+        logger.error("AI Service no inicializado")
+        return jsonify({
+            'success': False,
+            'error': 'Servicio de IA no disponible'
+        }), 503
+    
+    try:
+        data = request.get_json()
+        message = data.get('message', '').strip()
+        context = data.get('context', [])
+        
+        if not message:
+            return jsonify({
+                'success': False,
+                'error': 'Mensaje vacío'
+            }), 400
+        
+        logger.info(f"Chat - Mensaje recibido: {message[:50]}...")
+        
+        result = ai_service.chat(message, context)
+        
+        logger.info(f"Chat - Respuesta: success={result.get('success')}")
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error en /api/chat: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'error': 'Error procesando mensaje'
+        }), 500
+
+
 @app.route('/api/ai_test', methods=['GET'])
 def ai_test():
     """Endpoint de diagnóstico para probar la IA"""
